@@ -21,9 +21,10 @@ type shipDetails struct {
 	bridge       int
 	computer     int
 	hardpoints   int
+	remaining    float32
 }
 
-var StarShip = shipDetails{
+var StarShip = &shipDetails{
 	tons:         200,
 	tl:           "F",
 	tlOffset:     0,
@@ -36,6 +37,7 @@ var StarShip = shipDetails{
 	bridge:       40,
 	computer:     2,
 	hardpoints:   2,
+	remaining:    83,
 }
 
 var detailTons widget.Label
@@ -48,14 +50,71 @@ func tonsChanged(value string) {
 	tons, err := strconv.Atoi(value)
 	if err == nil {
 		StarShip.tons = tons
+		StarShip.hardpoints = StarShip.tons / 100
+
+		if countWeapons() > StarShip.hardpoints {
+			weapons.missile = 0
+			ignoreMissile = true
+			missileSelect.SetSelected("0")
+			ignoreMissile = false
+			buildMissile()
+			if countWeapons() > StarShip.hardpoints {
+				weapons.beam = 0
+				ignoreBeam = true
+				beamSelect.SetSelected("0")
+				ignoreBeam = false
+				buildBeam()
+				if countWeapons() > StarShip.hardpoints {
+					weapons.pulse = 0
+					ignorePulse = true
+					pulseSelect.SetSelected("0")
+					ignorePulse = false
+					buildPulse()
+					if countWeapons() > StarShip.hardpoints {
+						weapons.plasma = 0
+						ignorePlasma = true
+						plasmaSelect.SetSelected("0")
+						ignorePlasma = false
+						buildPlasma()
+						if countWeapons() > StarShip.hardpoints {
+							weapons.fusion = 0
+							ignoreFusion = true
+							fusionSelect.SetSelected("0")
+							ignoreFusion = false
+							buildFusion()
+							if countWeapons() > StarShip.hardpoints {
+								weapons.accelerator = 0
+								ignoreParticle = true
+								particleSelect.SetSelected("0")
+								ignoreParticle = false
+								buildParticle()
+								if countWeapons() > StarShip.hardpoints {
+									weapons.sandcaster = 0
+									ignoreSand = true
+									sandSelect.SetSelected("0")
+									ignoreSand = false
+									buildSand()
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 	}
-	buildTons()
+	buildDrives()
 	buildBridge()
-	BuildTotal()
+	buildHardPoints()
+	buildWeapons()
+	setEngineers()
+	refreshEngineeringCrew()
+	buildCrew()
+	buildTons()
+	buildTotal()
 }
 
 func buildTons() {
-	detailTons.SetText(fmt.Sprintf("Tons: %d", StarShip.tons))
+	detailTons.SetText(fmt.Sprintf("tons: %d", StarShip.tons))
 	detailTons.Refresh()
 }
 func buildBridge() {
@@ -72,18 +131,31 @@ func buildHardPoints() {
 	detailHardPoints.SetText(fmt.Sprintf("Hardpoints: %d", StarShip.hardpoints))
 	detailHardPoints.Refresh()
 }
-func BuildTotal() {
-	total := shipTonsUsed() + drivesTonsUsed()
-
-	detailTotal.SetText(fmt.Sprintf("Tons remaining: %2.1f", total))
+func buildTotal() {
+	total := StarShip.tons - shipTonsUsed() - drivesTonsUsed() - weaponsTonsUsed() - berthsTonsUsed()
+	StarShip.remaining = float32(total)
+	detailTotal.SetText(fmt.Sprintf("tons remaining: %d", total))
 	detailTotal.Refresh()
+	save := berths.staterooms
+	berths.staterooms = getTotalCrew()
+	adjustSlider()
+
+	if save > getTotalCrew() {
+		if float64(save) < stateroomSlider.Max {
+			berths.staterooms = save
+			stateroomSlider.Value = float64(save)
+		} else {
+			berths.staterooms = int(stateroomSlider.Max)
+			stateroomSlider.Value = stateroomSlider.Max
+		}
+	}
 }
 
 func buildShip() {
 	buildTons()
 	buildBridge()
 	buildHardPoints()
-	BuildTotal()
+	buildTotal()
 }
 
 func shipTonsUsed() int {

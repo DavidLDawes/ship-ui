@@ -32,9 +32,10 @@ func jumpChanged(value string) {
 		}
 		StarShip.jump = jump
 	}
-	StarShip.computer = Computer[jump]
+	StarShip.computer = computer[jump]
 	buildJump()
-	BuildTotal()
+	buildCrew()
+	buildTotal()
 }
 
 func maneuverChanged(value string) {
@@ -54,7 +55,8 @@ func maneuverChanged(value string) {
 		StarShip.maneuver = maneuver
 	}
 	buildManeuver()
-	BuildTotal()
+	buildCrew()
+	buildTotal()
 }
 
 func powerChanged(value string) {
@@ -80,7 +82,8 @@ func powerChanged(value string) {
 		}
 	}
 	buildPower()
-	BuildTotal()
+	buildCrew()
+	buildTotal()
 }
 
 var jbase = [5]float32{
@@ -113,7 +116,7 @@ var minc = [5]float32{
 }
 
 func maneuverRate() float32 {
-	return (mbase[StarShip.tlOffset] + minc[StarShip.tlOffset]*(float32(StarShip.jump)-1.0)) / 100.0
+	return (mbase[StarShip.tlOffset] + minc[StarShip.tlOffset]*(float32(StarShip.maneuver)-1.0)) / 100.0
 }
 
 var pbase = [5]float32{
@@ -124,25 +127,31 @@ var pinc = [5]float32{
 }
 
 func powerRate() float32 {
-	return (pbase[StarShip.tlOffset] + pinc[StarShip.tlOffset]*(float32(StarShip.jump)-1.0)) / 100.0
+	return (pbase[StarShip.tlOffset] + pinc[StarShip.tlOffset]*(float32(StarShip.power)-1.0)) / 100.0
 }
 
 func buildJump() {
 	StarShip.jumpTons = float32(StarShip.tons) * jumpRate()
 	detailJump.SetText(fmt.Sprintf("Jump: %d, tons: %2.1f", StarShip.jump, StarShip.jumpTons))
 	detailJump.Refresh()
-	detailComputer.SetText(fmt.Sprintf("Computer %d: %d tons", StarShip.jump, Computer[StarShip.jump-1]))
+	detailComputer.SetText(fmt.Sprintf("computer %d: %d tons", StarShip.jump, computer[StarShip.jump-1]))
 	detailComputer.Refresh()
+	setEngineers()
+	refreshEngineeringCrew()
 }
 func buildManeuver() {
 	StarShip.maneuverTons = float32(StarShip.tons) * maneuverRate()
 	detailManeuver.SetText(fmt.Sprintf("Maneuver: %d, tons: %2.1f", StarShip.maneuver, StarShip.maneuverTons))
 	detailManeuver.Refresh()
+	setEngineers()
+	refreshEngineeringCrew()
 }
 func buildPower() {
 	StarShip.powerTons = float32(StarShip.tons) * powerRate()
 	detailPower.SetText(fmt.Sprintf("Power: %d, tons: %2.1f", StarShip.power, StarShip.powerTons))
 	detailPower.Refresh()
+	setEngineers()
+	refreshEngineeringCrew()
 }
 func buildFuel() {
 	StarShip.jumpFuel = int(float32(StarShip.tons) * jumpFuelRate())

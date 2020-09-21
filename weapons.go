@@ -17,7 +17,7 @@ type weaponDetails struct {
 	accelerator int
 }
 
-var Weapons = weaponDetails{
+var weapons = weaponDetails{
 	missile:     0,
 	beam:        0,
 	pulse:       0,
@@ -25,64 +25,6 @@ var Weapons = weaponDetails{
 	fusion:      0,
 	sandcaster:  0,
 	accelerator: 0,
-}
-
-type Weapon struct {
-	name     string
-	max      int
-	tons     float32
-	ammoName string
-	ammoTons int
-}
-
-var missle = Weapon{
-	name:     "Missile launcher turret",
-	max:      3,
-	tons:     1.0,
-	ammoName: "missiles",
-	ammoTons: 4,
-}
-var beam = Weapon{
-	name:     "Beam laser turret",
-	max:      3,
-	tons:     1.0,
-	ammoName: "",
-	ammoTons: 0,
-}
-var pulse = Weapon{
-	name:     "Pulse laser turret",
-	max:      3,
-	tons:     1.0,
-	ammoName: "",
-	ammoTons: 0,
-}
-var fusion = Weapon{
-	name:     "Fusion gun turret",
-	max:      2,
-	tons:     2.0,
-	ammoName: "",
-	ammoTons: 0,
-}
-var sand = Weapon{
-	name:     "Sandcaster turret",
-	max:      3,
-	tons:     .5,
-	ammoName: "Sand",
-	ammoTons: 1,
-}
-var plasma = Weapon{
-	name:     "Plasma gun turret",
-	max:      2,
-	tons:     1.5,
-	ammoName: "",
-	ammoTons: 0,
-}
-var particle = Weapon{
-	name:     "Particle accelerator turret",
-	max:      1,
-	tons:     3.0,
-	ammoName: "",
-	ammoTons: 0,
 }
 
 var detailMissile widget.Label
@@ -101,102 +43,203 @@ var sandSelect *widget.Select
 var plasmaSelect *widget.Select
 var particleSelect *widget.Select
 
-// JumpChanged handle updates to the jump drive
-func missileChanged(value string) {
-	missiles, err := strconv.Atoi(value)
-	if err == nil {
-		Weapons.missile = missiles
+var weaponsSelect []*widget.Select
+
+var weaponsAlreadyInit bool = false
+
+var ignoreMissile = false
+var ignoreBeam = false
+var ignorePulse = false
+var ignorePlasma = false
+var ignoreSand = false
+var ignoreFusion = false
+var ignoreParticle = false
+
+func weaponsInit() {
+	if !weaponsAlreadyInit {
+		weaponsAlreadyInit = true
+		weaponsSelect = make([]*widget.Select, 7)
+		weaponsSelect[0] = missileSelect
+		weaponsSelect[1] = beamSelect
+		weaponsSelect[2] = pulseSelect
+		weaponsSelect[3] = fusionSelect
+		weaponsSelect[4] = sandSelect
+		weaponsSelect[5] = plasmaSelect
+		weaponsSelect[6] = particleSelect
 	}
-	buildMissile()
-	BuildTotal()
+}
+
+func missileChanged(value string) {
+	if !ignoreMissile {
+		missiles, err := strconv.Atoi(value)
+		if err == nil {
+			weapons.missile = missiles
+			if countWeapons() > StarShip.hardpoints {
+				weapons.missile = missiles - countWeapons() + StarShip.hardpoints
+				if weapons.missile < 0 {
+					weapons.missile = 0
+				}
+				if weapons.missile != missiles {
+					missileSelect.SetSelected(strconv.Itoa(weapons.missile))
+				}
+			}
+		}
+		buildMissile()
+		buildCrew()
+		buildTotal()
+	}
 }
 
 func beamChanged(value string) {
-	beamTurrets, err := strconv.Atoi(value)
-	if err == nil {
-		Weapons.beam = beamTurrets
+	if !ignoreBeam {
+		beamTurrets, err := strconv.Atoi(value)
+		if err == nil {
+			weapons.beam = beamTurrets
+			if countWeapons() > StarShip.hardpoints {
+				weapons.beam = beamTurrets - countWeapons() + StarShip.hardpoints
+				if weapons.beam < 0 {
+					weapons.beam = 0
+				}
+				beamSelect.SetSelected(strconv.Itoa(weapons.beam))
+			}
+		}
+		buildBeam()
+		buildCrew()
+		buildTotal()
 	}
-	buildBeam()
-	BuildTotal()
 }
 
 func pulseChanged(value string) {
-	pulse, err := strconv.Atoi(value)
-	if err == nil {
-		Weapons.pulse = pulse
+	if !ignorePulse {
+		pulse, err := strconv.Atoi(value)
+		if err == nil {
+			weapons.pulse = pulse
+			if countWeapons() > StarShip.hardpoints {
+				weapons.pulse = pulse - countWeapons() + StarShip.hardpoints
+				if weapons.pulse < 0 {
+					weapons.pulse = 0
+				}
+				pulseSelect.SetSelected(strconv.Itoa(weapons.pulse))
+			}
+		}
+		buildPulse()
+		buildCrew()
+		buildTotal()
 	}
-	buildPulse()
-	BuildTotal()
 }
 
 func fusionChanged(value string) {
-	fusion, err := strconv.Atoi(value)
-	if err == nil {
-		Weapons.fusion = fusion
+	if !ignoreFusion {
+		fusion, err := strconv.Atoi(value)
+		if err == nil {
+			weapons.fusion = fusion
+			if countWeapons() > StarShip.hardpoints {
+				weapons.fusion = fusion - countWeapons() + StarShip.hardpoints
+				if weapons.fusion < 0 {
+					weapons.fusion = 0
+				}
+				fusionSelect.SetSelected(strconv.Itoa(weapons.fusion))
+			}
+		}
+		buildFusion()
+		buildCrew()
+		buildTotal()
 	}
-	buildFusion()
-	BuildTotal()
 }
 
 func sandChanged(value string) {
-	sand, err := strconv.Atoi(value)
-	if err == nil {
-		Weapons.sandcaster = sand
+	if !ignoreSand {
+		sand, err := strconv.Atoi(value)
+		if err == nil {
+			weapons.sandcaster = sand
+			if countWeapons() > StarShip.hardpoints {
+				weapons.sandcaster = sand - countWeapons() + StarShip.hardpoints
+				if weapons.sandcaster < 0 {
+					weapons.sandcaster = 0
+				}
+				sandSelect.SetSelected(strconv.Itoa(weapons.sandcaster))
+			}
+		}
+		buildSand()
+		buildCrew()
+		buildTotal()
 	}
-	buildSand()
-	BuildTotal()
 }
 
 func plasmaChanged(value string) {
-	plasma, err := strconv.Atoi(value)
-	if err == nil {
-		Weapons.plasma = plasma
+	if !ignorePlasma {
+		plasma, err := strconv.Atoi(value)
+		if err == nil {
+			weapons.plasma = plasma
+			if countWeapons() > StarShip.hardpoints {
+				weapons.plasma = plasma - countWeapons() + StarShip.hardpoints
+				if weapons.plasma < 0 {
+					weapons.plasma = 0
+				}
+				plasmaSelect.SetSelected(strconv.Itoa(weapons.plasma))
+			}
+		}
+		buildPlasma()
+		buildCrew()
+		buildTotal()
 	}
-	buildPlasma()
-	BuildTotal()
 }
 
 func particleChanged(value string) {
-	particle, err := strconv.Atoi(value)
-	if err == nil {
-		Weapons.plasma = particle
+	if !ignoreParticle {
+		particle, err := strconv.Atoi(value)
+		if err == nil {
+			weapons.accelerator = particle
+			if countWeapons() > StarShip.hardpoints {
+				weapons.accelerator = particle - countWeapons() + StarShip.hardpoints
+				if weapons.accelerator < 0 {
+					weapons.accelerator = 0
+				}
+				particleSelect.SetSelected(strconv.Itoa(weapons.accelerator))
+			}
+		}
+		buildParticle()
+		buildCrew()
+		buildTotal()
 	}
-	buildParticle()
-	BuildTotal()
 }
 
 func buildMissile() {
-	detailMissile.SetText(fmt.Sprintf("Triple missile turrets: %d, tons: %2.1f, ammo tons: %d", Weapons.missile, float32(Weapons.missile), 4.0*float32(Weapons.missile)))
+	detailMissile.SetText(fmt.Sprintf("Triple missile turrets: %d, tons: %d, ammo tons: %d", weapons.missile, weapons.missile, 4*weapons.missile))
 	detailMissile.Refresh()
 }
 func buildBeam() {
-	detailBeam.SetText(fmt.Sprintf("Triple beam laser turrets: %d, tons: %2.1f", Weapons.beam, float32(Weapons.beam)))
+	detailBeam.SetText(fmt.Sprintf("Triple beam laser turrets: %d, tons: %2.1f", weapons.beam, float32(weapons.beam)))
 	detailBeam.Refresh()
 }
 func buildPulse() {
-	detailPulse.SetText(fmt.Sprintf("Triple pulse laser turrets: %d, tons: %2.1f", Weapons.pulse, float32(Weapons.pulse)))
+	detailPulse.SetText(fmt.Sprintf("Triple pulse laser turrets: %d, tons: %2.1f", weapons.pulse, float32(weapons.pulse)))
 	detailPulse.Refresh()
 }
 func buildPlasma() {
-	detailPlasma.SetText(fmt.Sprintf("Double plasma gun turrets: %d, tons: %2.1f", Weapons.plasma, 2.0*float32(Weapons.plasma)))
+	detailPlasma.SetText(fmt.Sprintf("Double plasma gun turrets: %d, tons: %2.1f", weapons.plasma, 2.0*float32(weapons.plasma)))
 	detailPulse.Refresh()
 }
 func buildFusion() {
-	detailFusion.SetText(fmt.Sprintf("Double fusion gun turrets: %d, tons: %2.1f", Weapons.fusion, 2.0*float32(Weapons.fusion)))
+	detailFusion.SetText(fmt.Sprintf("Double fusion gun turrets: %d, tons: %2.1f", weapons.fusion, 2.0*float32(weapons.fusion)))
 	detailFusion.Refresh()
 }
 func buildSand() {
-	if Weapons.sandcaster > 0 {
-		detailSand.SetText(fmt.Sprintf("Triple sandcaster turrets: %d, tons: %2.1f, ammo tons %2.1f", Weapons.sandcaster, 0.5*float32(Weapons.sandcaster), 1.0*float32(Weapons.sandcaster)))
+	if weapons.sandcaster > 0 {
+		detailSand.SetText(fmt.Sprintf("Triple sandcaster turrets: %d, tons: %2.1f, ammo tons %2.1f", weapons.sandcaster, 0.5*float32(weapons.sandcaster), 1.0*float32(weapons.sandcaster)))
 	} else {
 		detailSand.SetText("Triple sandcaster turrets: 0, tons: 0")
 	}
 	detailFusion.Refresh()
 }
 func buildParticle() {
-	detailParticle.SetText(fmt.Sprintf("Paticle acceleraor turrets: %d, tons: %2.1f", Weapons.accelerator, 3.0*float32(Weapons.accelerator)))
+	detailParticle.SetText(fmt.Sprintf("Paticle acceleraor turrets: %d, tons: %2.1f", weapons.accelerator, 3.0*float32(weapons.accelerator)))
 	detailFusion.Refresh()
+}
 
+func countWeapons() int {
+	result := weapons.missile + weapons.beam + weapons.pulse + weapons.plasma + weapons.sandcaster + weapons.fusion + weapons.accelerator
+	return result
 }
 
 func buildWeapons() {
@@ -209,5 +252,6 @@ func buildWeapons() {
 }
 
 func weaponsTonsUsed() int {
-	return int(5.0*float32(Weapons.missile) + float32(Weapons.beam) + float32(Weapons.pulse) + 2.0*float32(Weapons.fusion) + 2.0*float32(Weapons.plasma) + 5.0*float32(Weapons.accelerator))
+	result := int(5.0*float32(weapons.missile) + float32(weapons.beam) + float32(weapons.pulse) + 2.0*float32(weapons.fusion) + 2.0*float32(weapons.plasma) + 5.0*float32(weapons.accelerator))
+	return result
 }
