@@ -1,11 +1,12 @@
 package main
 
 import (
-	"strconv"
-
 	"fyne.io/fyne/app"
 	"fyne.io/fyne/widget"
 )
+
+var saveButton = widget.NewButton("Save", saveMe)
+var loadButton = widget.NewButton("Load", loadMe)
 
 func buildDetails() {
 	buildShip()
@@ -16,12 +17,13 @@ func buildDetails() {
 	buildTotal()
 }
 
-var weaponSettings *widget.Form
-
 func main() {
 
 	buildDetails()
 	weaponsInit()
+	berthsInit()
+	drivesInit()
+	shipInit()
 
 	a := app.New()
 	w := a.NewWindow("Designer")
@@ -31,100 +33,6 @@ func main() {
 
 	tonsSelect = widget.NewSelect(tons, tonsChanged)
 	tonsSelect.SetSelected("200")
-
-	jumpSelect = widget.NewSelect(engineLevel, jumpChanged)
-	jumpSelect.SetSelected("2")
-
-	maneuverSelect = widget.NewSelect(engineLevel, maneuverChanged)
-	maneuverSelect.SetSelected("2")
-
-	powerSelect = widget.NewSelect(engineLevel, powerChanged)
-	powerSelect.SetSelected("2")
-
-	shipSettings := widget.NewForm(
-		widget.NewFormItem("Tech Level", tlSelect),
-		widget.NewFormItem("tons", tonsSelect),
-		widget.NewFormItem("Jump", jumpSelect),
-		widget.NewFormItem("Maneuver", maneuverSelect),
-		widget.NewFormItem("Power", powerSelect),
-	)
-
-	shipDetails := widget.NewVBox(
-		&detailTons,
-		&detailJump,
-		&detailJumpFuel,
-		&detailManeuver,
-		&detailPower,
-		&detailBridge,
-		&detailComputer,
-		&detailHardPoints,
-		&detailTotal,
-	)
-
-	missileSelect = widget.NewSelect(weaponLevel, missileChanged)
-	missileSelect.SetSelected("0")
-	beamSelect = widget.NewSelect(weaponLevel, beamChanged)
-	beamSelect.SetSelected("0")
-	pulseSelect = widget.NewSelect(weaponLevel, pulseChanged)
-	pulseSelect.SetSelected("0")
-	fusionSelect = widget.NewSelect(weaponLevel, fusionChanged)
-	fusionSelect.SetSelected("0")
-	plasmaSelect = widget.NewSelect(weaponLevel, plasmaChanged)
-	plasmaSelect.SetSelected("0")
-	sandSelect = widget.NewSelect(weaponLevel, sandChanged)
-	sandSelect.SetSelected("0")
-	particleSelect = widget.NewSelect(weaponLevel, particleChanged)
-	particleSelect.SetSelected("0")
-
-	weaponSettings = widget.NewForm(
-		widget.NewFormItem("Missile", missileSelect),
-		widget.NewFormItem("Beam", beamSelect),
-		widget.NewFormItem("Pulse", pulseSelect),
-		widget.NewFormItem("Fusion", fusionSelect),
-		widget.NewFormItem("Sand", sandSelect),
-		widget.NewFormItem("Plasma", plasmaSelect),
-		widget.NewFormItem("Accelerators", particleSelect),
-	)
-
-	weaponDetails := widget.NewVBox(
-		&detailMissile,
-		&detailBeam,
-		&detailPulse,
-		&detailFusion,
-		&detailSand,
-		&detailPlasma,
-		&detailParticle,
-	)
-
-	lowLevel := make([]string, 101)
-	for i := 0; i < 101; i++ {
-		lowLevel[i] = strconv.Itoa(i)
-	}
-
-	lowBerthSelect = widget.NewSelect(lowLevel, lowBerthsChanged)
-	lowBerthSelect.SetSelected("0")
-
-	emergencyLowSelect = widget.NewSelect(lowLevel, emergencyLowChanged)
-	emergencyLowSelect.SetSelected("1")
-
-	adjustSlider()
-
-	berthSettings := widget.NewForm(
-		widget.NewFormItem("Staterooms", stateroomSlider),
-		widget.NewFormItem("Low Berths", lowBerthSelect),
-		widget.NewFormItem("Emergency Low Berths", emergencyLowSelect),
-	)
-
-	berthDetails := widget.NewVBox(
-		&detailStaterooms,
-		&detailLowBerths,
-		&detailEmergencyLow,
-		&detailCommandCrew,
-		&detailBridgeCrew,
-		&detailEngCrew,
-		&detailGunCrew,
-		&detailStewardCrew,
-	)
 
 	atvWheelSelect = widget.NewSelect(weaponLevel, atvWheelChanged)
 	atvTrackSelect = widget.NewSelect(weaponLevel, atvTrackChanged)
@@ -160,18 +68,38 @@ func main() {
 		widget.NewFormItem("Heavy Fighter", hvyFigherSelect),
 	)
 
-	vehicleDetails := widget.NewVBox(
-		&detailSurfaceVehicles,
-		&detailUtilityVehicles,
-		&detailHighEndVehicles,
-	)
-
+	weaponsSelectInit()
+	setVehicleDetails()
+	drivesSelectsInit()
+	berthsSelectsInit()
 	adjustSlider()
 
-	ui := widget.NewVBox(widget.NewHBox(widget.NewLabel("Drives"), shipSettings, shipDetails, widget.NewLabel("Weapons"), weaponSettings, weaponDetails),
-		widget.NewLabel("Berths and Crew"), widget.NewHBox(berthSettings, berthDetails, vehicleSettings, vehicleDetails),
-	)
+	//	ui := widget.NewVBox(widget.NewHBox(widget.NewLabel("Drives"), shipSettings, shipDetails, widget.NewLabel("Weapons"), weaponSettings, weaponDetails),
+	//		widget.NewLabel("Berths and Crew"), widget.NewHBox(berthSettings, berthDetails, vehicleSettings, vehicleDetails),
+	//ui := widget.NewHBox(widget.NewVBox(widget.NewLabel("Drives"), shipSettings, widget.NewLabel("Weapons"), weaponSettings,
+	//	widget.NewLabel("Berths"), berthSettings),
+	//	widget.NewVBox(widget.NewLabel("Vehicles"), vehicleSettings),
+	//	widget.NewVBox(shipDetails, weaponDetails, berthDetails, vehicleDetails))
+
+	ui := widget.NewHBox(
+		widget.NewVBox(widget.NewLabel("Drives"), shipSettings, widget.NewLabel("Berths")),
+		widget.NewVBox(widget.NewLabel("Vehicles"), vehicleSettings),
+		widget.NewVBox(shipDetails, weaponDetails, berthDetails, vehicleDetails))
+
 	w.SetContent(ui)
 
 	w.ShowAndRun()
+	ui = widget.NewHBox(widget.NewVBox(widget.NewLabel("Drives"), widget.NewLabel("Weapons"),
+		widget.NewLabel("Berths"), berthSettings),
+		widget.NewVBox(widget.NewLabel("Vehicles"), vehicleSettings),
+		widget.NewVBox(shipDetails, weaponDetails, berthDetails, vehicleDetails))
+
+}
+
+func saveMe() {
+
+}
+
+func loadMe() {
+
 }

@@ -5,7 +5,6 @@ import (
 )
 
 var tlSelect *widget.Select
-var tonsSelect *widget.Select
 
 func techLevelChanged(tlSelected string) {
 	if len(tlSelected) == 1 {
@@ -47,5 +46,6 @@ func techLevelChanged(tlSelected string) {
 		buildBridge()
 		buildHardPoints()
 		buildTotal()
+		adjustSlider()
 	}
 }

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
+	"fyne.io/fyne"
 	"fyne.io/fyne/widget"
 )
 
-type weaponDetails struct {
+type weaponCounts struct {
 	missile     int
 	beam        int
 	pulse       int
@@ -17,7 +18,7 @@ type weaponDetails struct {
 	accelerator int
 }
 
-var weapons = weaponDetails{
+var weapons = weaponCounts{
 	missile:     0,
 	beam:        0,
 	pulse:       0,
@@ -27,13 +28,17 @@ var weapons = weaponDetails{
 	accelerator: 0,
 }
 
-var detailMissile widget.Label
-var detailBeam widget.Label
-var detailPulse widget.Label
-var detailFusion widget.Label
-var detailSand widget.Label
-var detailPlasma widget.Label
-var detailParticle widget.Label
+var weaponSettings *widget.Form
+
+var detailMissile *widget.Label = widget.NewLabel("")
+var detailBeam *widget.Label = widget.NewLabel("")
+var detailPulse *widget.Label = widget.NewLabel("")
+var detailFusion *widget.Label = widget.NewLabel("")
+var detailSand *widget.Label = widget.NewLabel("")
+var detailPlasma *widget.Label = widget.NewLabel("")
+var detailParticle *widget.Label = widget.NewLabel("")
+
+var weaponDetails *widget.Box = widget.NewVBox()
 
 var missileSelect *widget.Select
 var beamSelect *widget.Select
@@ -46,6 +51,7 @@ var particleSelect *widget.Select
 var weaponsSelect []*widget.Select
 
 var weaponsAlreadyInit bool = false
+var weaponsSelectsAlreadyInit bool = false
 
 var ignoreMissile = false
 var ignoreBeam = false
@@ -56,17 +62,70 @@ var ignoreFusion = false
 var ignoreParticle = false
 
 func weaponsInit() {
-	if !weaponsAlreadyInit {
-		weaponsAlreadyInit = true
-		weaponsSelect = make([]*widget.Select, 7)
-		weaponsSelect[0] = missileSelect
-		weaponsSelect[1] = beamSelect
-		weaponsSelect[2] = pulseSelect
-		weaponsSelect[3] = fusionSelect
-		weaponsSelect[4] = sandSelect
-		weaponsSelect[5] = plasmaSelect
-		weaponsSelect[6] = particleSelect
-	}
+	weaponSettings = widget.NewForm(
+		widget.NewFormItem("Missile", missileSelect),
+		widget.NewFormItem("Beam", beamSelect),
+		widget.NewFormItem("Pulse", pulseSelect),
+		widget.NewFormItem("Fusion", fusionSelect),
+		widget.NewFormItem("Sand", sandSelect),
+		widget.NewFormItem("Plasma", plasmaSelect),
+		widget.NewFormItem("Accelerators", particleSelect),
+	)
+}
+
+func weaponsSelectInit() {
+	missileSelect = widget.NewSelect(weaponLevel, nothing)
+	ignoreMissile = true
+	missileSelect.SetSelected("0")
+	missileSelect.OnChanged = missileChanged
+	ignoreMissile = false
+
+	beamSelect = widget.NewSelect(weaponLevel, nothing)
+	ignoreBeam = true
+	beamSelect.SetSelected("0")
+	missileSelect.OnChanged = beamChanged
+	ignoreBeam = false
+
+	pulseSelect = widget.NewSelect(weaponLevel, nothing)
+	ignorePulse = true
+	pulseSelect.SetSelected("0")
+	missileSelect.OnChanged = pulseChanged
+	ignorePulse = false
+
+	fusionSelect = widget.NewSelect(weaponLevel, nothing)
+	ignoreFusion = true
+	fusionSelect.SetSelected("0")
+	missileSelect.OnChanged = fusionChanged
+	ignoreFusion = false
+
+	plasmaSelect = widget.NewSelect(weaponLevel, nothing)
+	ignorePlasma = true
+	plasmaSelect.SetSelected("0")
+	missileSelect.OnChanged = plasmaChanged
+	ignorePlasma = false
+
+	sandSelect = widget.NewSelect(weaponLevel, nothing)
+	ignoreSand = true
+	sandSelect.SetSelected("0")
+	missileSelect.OnChanged = sandChanged
+	ignoreSand = false
+
+	particleSelect = widget.NewSelect(weaponLevel, nothing)
+	ignoreParticle = true
+	particleSelect.SetSelected("0")
+	missileSelect.OnChanged = particleChanged
+	ignoreParticle = false
+
+	weaponsSelect = make([]*widget.Select, 7)
+	weaponsSelect[0] = missileSelect
+	weaponsSelect[1] = beamSelect
+	weaponsSelect[2] = pulseSelect
+	weaponsSelect[3] = fusionSelect
+	weaponsSelect[4] = sandSelect
+	weaponsSelect[5] = plasmaSelect
+	weaponsSelect[6] = particleSelect
+
+	setWeaponDetails()
 }
 
 func missileChanged(value string) {
@@ -83,6 +142,7 @@ func missileChanged(value string) {
 					missileSelect.SetSelected(strconv.Itoa(weapons.missile))
 				}
 			}
+			setWeaponDetails()
 		}
 		buildMissile()
 		buildCrew()
@@ -102,6 +162,7 @@ func beamChanged(value string) {
 				}
 				beamSelect.SetSelected(strconv.Itoa(weapons.beam))
 			}
+			setWeaponDetails()
 		}
 		buildBeam()
 		buildCrew()
@@ -121,6 +182,7 @@ func pulseChanged(value string) {
 				}
 				pulseSelect.SetSelected(strconv.Itoa(weapons.pulse))
 			}
+			setWeaponDetails()
 		}
 		buildPulse()
 		buildCrew()
@@ -140,6 +202,7 @@ func fusionChanged(value string) {
 				}
 				fusionSelect.SetSelected(strconv.Itoa(weapons.fusion))
 			}
+			setWeaponDetails()
 		}
 		buildFusion()
 		buildCrew()
@@ -159,6 +222,7 @@ func sandChanged(value string) {
 				}
 				sandSelect.SetSelected(strconv.Itoa(weapons.sandcaster))
 			}
+			setWeaponDetails()
 		}
 		buildSand()
 		buildCrew()
@@ -178,6 +242,7 @@ func plasmaChanged(value string) {
 				}
 				plasmaSelect.SetSelected(strconv.Itoa(weapons.plasma))
 			}
+			setWeaponDetails()
 		}
 		buildPlasma()
 		buildCrew()
@@ -205,35 +270,31 @@ func particleChanged(value string) {
 }
 
 func buildMissile() {
-	detailMissile.SetText(fmt.Sprintf("Triple missile turrets: %d, tons: %d, ammo tons: %d", weapons.missile, weapons.missile, 4*weapons.missile))
+	detailMissile.SetText(buildAmmoWeaponString("Triple Missile turrets: %d, tons: %d, ammo tons: %d", weapons.missile, int(armor()*float32(weapons.missile)+.9999), int(armor()*float32(4*weapons.missile)+.9999)))
 	detailMissile.Refresh()
 }
 func buildBeam() {
-	detailBeam.SetText(fmt.Sprintf("Triple beam laser turrets: %d, tons: %2.1f", weapons.beam, float32(weapons.beam)))
+	detailBeam.SetText(buildWeaponString("Triple Beam laser turrets: %d, tons: %d", weapons.beam, int(armor()*float32(weapons.beam)+.9999)))
 	detailBeam.Refresh()
 }
 func buildPulse() {
-	detailPulse.SetText(fmt.Sprintf("Triple pulse laser turrets: %d, tons: %2.1f", weapons.pulse, float32(weapons.pulse)))
+	detailPulse.SetText(buildWeaponString("Triple Pulse lasr turrets: %d, tons: %d", weapons.pulse, int(armor()*float32(weapons.pulse)+.9999)))
 	detailPulse.Refresh()
 }
 func buildPlasma() {
-	detailPlasma.SetText(fmt.Sprintf("Double plasma gun turrets: %d, tons: %2.1f", weapons.plasma, 2.0*float32(weapons.plasma)))
+	detailPlasma.SetText(buildWeaponString("Double Plasma gun turrets: %d, tons: %d", weapons.plasma, int(armor()*float32(2*weapons.plasma)+.9999)))
 	detailPulse.Refresh()
 }
 func buildFusion() {
-	detailFusion.SetText(fmt.Sprintf("Double fusion gun turrets: %d, tons: %2.1f", weapons.fusion, 2.0*float32(weapons.fusion)))
+	detailFusion.SetText(buildWeaponString("Double Fusion gun turrets: %d, tons: %d", weapons.fusion, int(armor()*float32(2*weapons.fusion)+.9999)))
 	detailFusion.Refresh()
 }
 func buildSand() {
-	if weapons.sandcaster > 0 {
-		detailSand.SetText(fmt.Sprintf("Triple sandcaster turrets: %d, tons: %2.1f, ammo tons %2.1f", weapons.sandcaster, 0.5*float32(weapons.sandcaster), 1.0*float32(weapons.sandcaster)))
-	} else {
-		detailSand.SetText("Triple sandcaster turrets: 0, tons: 0")
-	}
+	detailSand.SetText(buildAmmoWeaponString("Triple Sandcaster turrets: %d, tons: %d, ammo tons: %d", weapons.sandcaster, int(armor()*float32(weapons.sandcaster)/2.0+.9999), int(armor()*float32(weapons.sandcaster)+.9999)))
 	detailFusion.Refresh()
 }
 func buildParticle() {
-	detailParticle.SetText(fmt.Sprintf("Paticle acceleraor turrets: %d, tons: %2.1f", weapons.accelerator, 3.0*float32(weapons.accelerator)))
+	detailParticle.SetText(buildWeaponString("Particle Accelerator turrets: %d, tons: %d", weapons.accelerator, int(armor()*float32(3*weapons.accelerator)+.9999)))
 	detailFusion.Refresh()
 }
 
@@ -252,6 +313,48 @@ func buildWeapons() {
 }
 
 func weaponsTonsUsed() int {
-	result := int(5.0*float32(weapons.missile) + float32(weapons.beam) + float32(weapons.pulse) + 2.0*float32(weapons.fusion) + 2.0*float32(weapons.plasma) + 5.0*float32(weapons.accelerator))
+	result := int(.9999 + armor()*(5.0*float32(weapons.missile)+float32(weapons.beam)+float32(weapons.pulse)+2.0*float32(weapons.fusion)+2.0*float32(weapons.plasma)+5.0*float32(weapons.accelerator)))
 	return result
+}
+
+func buildWeaponString(weaponDescription string, count int, tons int) string {
+	if count > 0 {
+		return fmt.Sprintf(weaponDescription, count, int(float32(tons)*armor()))
+	}
+	return ""
+}
+
+func buildAmmoWeaponString(weaponAmmoDescription string, count int, tons int, ammoTons int) string {
+	if count > 0 {
+		return fmt.Sprintf(weaponAmmoDescription, count, int(.999+float32(tons)*armor()), int(.999+float32(ammoTons)*armor()))
+	}
+	return ""
+}
+
+func setWeaponDetails() {
+	// Start again
+	weaponDetails.Children = make([]fyne.CanvasObject, 0)
+	// Check each and add if needed
+	addWeapon(weapons.missile, weaponDetails, detailMissile)
+	addWeapon(weapons.beam, weaponDetails, detailBeam)
+	addWeapon(weapons.pulse, weaponDetails, detailPulse)
+	addWeapon(weapons.plasma, weaponDetails, detailPlasma)
+	addWeapon(weapons.fusion, weaponDetails, detailFusion)
+	addWeapon(weapons.sandcaster, weaponDetails, detailSand)
+	addWeapon(weapons.accelerator, weaponDetails, detailParticle)
+	weaponDetails.Refresh()
+}
+
+// Add next weapon, if needed, to the detailed list of weapons
+func addWeapon(count int, box *widget.Box, label *widget.Label) {
+	if count > 0 {
+		weaponDetails.Children = append(weaponDetails.Children, label)
+	}
+}
+
+func armor() float32 {
+	if StarShip.armored {
+		return 1.1
+	}
+	return 1.0
 }

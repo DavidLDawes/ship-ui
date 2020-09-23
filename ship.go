@@ -7,7 +7,7 @@ import (
 	"fyne.io/fyne/widget"
 )
 
-type shipDetails struct {
+type shipCountsAndTons struct {
 	tons         int
 	tl           string
 	tlOffset     int
@@ -22,9 +22,12 @@ type shipDetails struct {
 	computer     int
 	hardpoints   int
 	remaining    float32
+	armored      bool
+	robo         bool
 }
 
-var StarShip = &shipDetails{
+// StarShip originally the definition, now a subset
+var StarShip = &shipCountsAndTons{
 	tons:         200,
 	tl:           "F",
 	tlOffset:     0,
@@ -38,14 +41,65 @@ var StarShip = &shipDetails{
 	computer:     2,
 	hardpoints:   2,
 	remaining:    83,
+	armored:      false,
+	robo:         false,
 }
 
-var detailTons widget.Label
-var detailBridge widget.Label
-var detailComputer widget.Label
-var detailHardPoints widget.Label
-var detailTotal widget.Label
+var tonsSelect *widget.Select
+var armoredSelect *widget.Check
+var roboSelect *widget.Check
 
+var detailTons *widget.Label = widget.NewLabel("")
+var detailBridge *widget.Label = widget.NewLabel("")
+var detailComputer *widget.Label = widget.NewLabel("")
+var detailHardPoints *widget.Label = widget.NewLabel("")
+var detailTotal *widget.Label = widget.NewLabel("")
+
+var shipSettings *widget.Form
+
+var shipDetails *widget.Box
+
+func shipInit() {
+	shipSettings = widget.NewForm(
+		widget.NewFormItem("Tech Level", tlSelect),
+		widget.NewFormItem("tons", tonsSelect),
+		widget.NewFormItem("Jump", jumpSelect),
+		widget.NewFormItem("Maneuver", maneuverSelect),
+		widget.NewFormItem("Power", powerSelect),
+		widget.NewFormItem("Armored", armoredSelect),
+		widget.NewFormItem("Robotics", roboSelect),
+	)
+
+	shipDetails = widget.NewVBox(
+		detailTons,
+		detailJump,
+		detailJumpFuel,
+		detailManeuver,
+		detailPower,
+		detailBridge,
+		detailComputer,
+		detailHardPoints,
+		detailTotal,
+	)
+
+	tonsSelect = widget.NewSelect(tons, nothing)
+	tonsSelect.Selected = "200"
+
+	armoredSelect = widget.NewCheck("Armored bulkheads", armoredChanged)
+	armoredSelect.Checked = false
+
+	roboSelect = widget.NewCheck("Robotic crew", roboChanged)
+	roboSelect.Checked = false
+}
+
+func armoredChanged(armored bool) {
+	StarShip.armored = armored
+	tonsChanged(strconv.Itoa(StarShip.tons))
+}
+func roboChanged(robots bool) {
+	StarShip.robo = robots
+	buildBerths()
+}
 func tonsChanged(value string) {
 	tons, err := strconv.Atoi(value)
 	if err == nil {
@@ -111,6 +165,7 @@ func tonsChanged(value string) {
 	buildCrew()
 	buildTons()
 	buildTotal()
+	adjustSlider()
 }
 
 func buildTons() {
@@ -118,9 +173,9 @@ func buildTons() {
 	detailTons.Refresh()
 }
 func buildBridge() {
-	bridgeTons := int(float32(StarShip.tons) * .02)
+	bridgeTons := int(float32(StarShip.tons) * .02 * armor())
 	if bridgeTons < 20 {
-		bridgeTons = 20
+		bridgeTons = int(armor()*float32(20) + .9999)
 	}
 	StarShip.bridge = bridgeTons
 	detailBridge.SetText(fmt.Sprintf("Bridge: %d", bridgeTons))
@@ -132,23 +187,20 @@ func buildHardPoints() {
 	detailHardPoints.Refresh()
 }
 func buildTotal() {
-	total := StarShip.tons - shipTonsUsed() - drivesTonsUsed() - weaponsTonsUsed() - berthsTonsUsed()
-	StarShip.remaining = float32(total)
-	detailTotal.SetText(fmt.Sprintf("tons remaining: %d", total))
-	detailTotal.Refresh()
-	save := berths.staterooms
-	berths.staterooms = getTotalCrew()
-	adjustSlider()
-
-	if save > getTotalCrew() {
-		if float64(save) < stateroomSlider.Max {
-			berths.staterooms = save
-			stateroomSlider.Value = float64(save)
-		} else {
-			berths.staterooms = int(stateroomSlider.Max)
-			stateroomSlider.Value = stateroomSlider.Max
+	StarShip.remaining = remainingTons()
+	detailTotal.SetText(fmt.Sprintf("Tons remaining: %2.1f", StarShip.remaining))
+	if berths.staterooms < getTotalCrew() {
+		berths.staterooms = getTotalCrew()
+		StarShip.remaining = remainingTons()
+		detailTotal.SetText(fmt.Sprintf("Tons remaining: %2.1f", StarShip.remaining))
+	} else {
+		if StarShip.remaining < 0 {
+			berths.staterooms = getTotalCrew()
+			StarShip.remaining = remainingTons()
+			detailTotal.SetText(fmt.Sprintf("Tons remaining: %2.1f", StarShip.remaining))
 		}
 	}
+	detailTotal.Refresh()
 }
 
 func buildShip() {
@@ -160,4 +212,10 @@ func buildShip() {
 
 func shipTonsUsed() int {
 	return int(float32(StarShip.bridge) + float32(StarShip.computer) + float32(StarShip.hardpoints))
+}
+
+func remainingTons() float32 {
+	remaining := StarShip.tons - shipTonsUsed() - drivesTonsUsed() - weaponsTonsUsed() - berthsTonsUsed() - vehicleTonsUsed()
+	return float32(remaining)
+
 }

@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"strconv"
 
+	"fyne.io/fyne"
 	"fyne.io/fyne/widget"
 )
 
-type vehicleDetails struct {
+type vehicleCounts struct {
 	atvWheel    int
 	atvTrack    int
 	airRaft     int
@@ -25,7 +26,7 @@ type vehicleDetails struct {
 	hvyFighter  int
 }
 
-var vehicles = vehicleDetails{
+var vehicles = vehicleCounts{
 	atvWheel:    0,
 	atvTrack:    0,
 	airRaft:     0,
@@ -43,9 +44,11 @@ var vehicles = vehicleDetails{
 	hvyFighter:  0,
 }
 
-var detailSurfaceVehicles widget.Label
-var detailUtilityVehicles widget.Label
-var detailHighEndVehicles widget.Label
+var detailSurfaceVehicles *widget.Label = widget.NewLabel("")
+var detailUtilityVehicles *widget.Label = widget.NewLabel("")
+var detailHighEndVehicles *widget.Label = widget.NewLabel("")
+
+var vehicleDetails *widget.Box = widget.NewVBox()
 
 var atvWheelSelect *widget.Select
 var atvTrackSelect *widget.Select
@@ -72,6 +75,7 @@ func atvWheelChanged(value string) {
 			vehicles.atvWheel = atvw
 			ignorevehicles = true
 			buildSurface()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -86,6 +90,7 @@ func atvTrackChanged(value string) {
 			vehicles.atvTrack = atvt
 			ignorevehicles = true
 			buildSurface()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -100,6 +105,7 @@ func airRaftChanged(value string) {
 			vehicles.airRaft = air
 			ignorevehicles = true
 			buildSurface()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -114,6 +120,7 @@ func speederChanged(value string) {
 			vehicles.speeder = spdr
 			ignorevehicles = true
 			buildSurface()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -128,6 +135,7 @@ func gCarrierChanged(value string) {
 			vehicles.gCarrier = gc
 			ignorevehicles = true
 			buildSurface()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -142,6 +150,7 @@ func launchChanged(value string) {
 			vehicles.launch = launch
 			ignorevehicles = true
 			buildUtility()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -156,6 +165,7 @@ func shipsBoatChanged(value string) {
 			vehicles.shipsBoat = sboat
 			ignorevehicles = true
 			buildUtility()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -170,6 +180,7 @@ func pinnaceChanged(value string) {
 			vehicles.pinnace = pinnace
 			ignorevehicles = true
 			buildUtility()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -184,6 +195,7 @@ func cutterChanged(value string) {
 			vehicles.cutter = cutter
 			ignorevehicles = true
 			buildUtility()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -198,6 +210,7 @@ func slowBoatChanged(value string) {
 			vehicles.slowBoat = sloboat
 			ignorevehicles = true
 			buildUtility()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -212,6 +225,7 @@ func slowPinnaceChanged(value string) {
 			vehicles.slowPinnace = slopin
 			ignorevehicles = true
 			buildUtility()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -226,6 +240,7 @@ func shuttleChanged(value string) {
 			vehicles.shuttle = shuttle
 			ignorevehicles = true
 			buildHighEnd()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -240,6 +255,7 @@ func ltFigherChanged(value string) {
 			vehicles.ltFighter = lftr
 			ignorevehicles = true
 			buildHighEnd()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -254,6 +270,7 @@ func medFighterChanged(value string) {
 			vehicles.medFighter = mftr
 			ignorevehicles = true
 			buildHighEnd()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -268,6 +285,7 @@ func hvyFighterChanged(value string) {
 			vehicles.hvyFighter = hftr
 			ignorevehicles = true
 			buildHighEnd()
+			setVehicleDetails()
 			buildCrew()
 			buildTotal()
 			ignorevehicles = false
@@ -276,6 +294,60 @@ func hvyFighterChanged(value string) {
 }
 
 func buildSurface() {
+	surface := getSurfaceVehicles()
+	detailSurfaceVehicles.SetText(surface)
+	detailSurfaceVehicles.Refresh()
+}
+
+func buildUtility() {
+	utility := getUtilityVehicles()
+	detailUtilityVehicles.SetText(utility)
+	detailUtilityVehicles.Refresh()
+}
+
+func buildHighEnd() {
+	highEnd := getHighEndVehicles()
+	detailHighEndVehicles.SetText(highEnd)
+	detailHighEndVehicles.Refresh()
+
+}
+
+func buildVehicles() {
+	buildSurface()
+	buildUtility()
+	buildHighEnd()
+	setVehicleDetails()
+	buildTotal()
+}
+
+func countVehicles() int {
+	result := vehicles.atvWheel + vehicles.atvTrack + vehicles.airRaft + vehicles.speeder + vehicles.gCarrier + vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat + vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
+	return result
+}
+
+func vehicleTonsUsed() int {
+	result := vehicles.atvWheel*10 + vehicles.atvTrack*10 + vehicles.airRaft*4 + vehicles.speeder*6 + vehicles.gCarrier*8 + vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 + vehicles.cutter*80 + vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 + vehicles.ltFighter*10 + vehicles.medFighter*30 + vehicles.hvyFighter*50
+	return result
+}
+
+func setVehicleDetails() {
+	// Start again
+	vehicleDetails.Children = make([]fyne.CanvasObject, 0)
+	// Check each and add if needed
+	if len(detailSurfaceVehicles.Text) > 0 {
+		vehicleDetails.Children = append(vehicleDetails.Children, detailSurfaceVehicles)
+	}
+	if len(detailUtilityVehicles.Text) > 0 {
+		vehicleDetails.Children = append(vehicleDetails.Children, detailUtilityVehicles)
+	}
+	if len(detailHighEndVehicles.Text) > 0 {
+		vehicleDetails.Children = append(vehicleDetails.Children, detailHighEndVehicles)
+	}
+	vehicleDetails.Refresh()
+}
+
+func getSurfaceVehicles() string {
+
 	surface := ""
 	if vehicles.atvWheel > 0 {
 		surface += fmt.Sprintf("%d ATV Wheeled, ", vehicles.atvWheel)
@@ -292,11 +364,10 @@ func buildSurface() {
 	if vehicles.gCarrier > 0 {
 		surface += fmt.Sprintf("%d GCarrier, ", vehicles.gCarrier)
 	}
-	detailSurfaceVehicles.SetText(surface)
-	detailSurfaceVehicles.Refresh()
+	return surface
 }
 
-func buildUtility() {
+func getUtilityVehicles() string {
 	utility := ""
 	if vehicles.launch > 0 {
 		utility += fmt.Sprintf("%d Launch, ", vehicles.launch)
@@ -316,11 +387,10 @@ func buildUtility() {
 	if vehicles.slowPinnace > 0 {
 		utility += fmt.Sprintf("%d SLow Pinnace, ", vehicles.slowPinnace)
 	}
-	detailUtilityVehicles.SetText(utility)
-	detailUtilityVehicles.Refresh()
+	return utility
 }
 
-func buildHighEnd() {
+func getHighEndVehicles() string {
 	highEnd := ""
 	if vehicles.shuttle > 0 {
 		highEnd += fmt.Sprintf("%d Shuttle, ", vehicles.shuttle)
@@ -334,24 +404,5 @@ func buildHighEnd() {
 	if vehicles.hvyFighter > 0 {
 		highEnd += fmt.Sprintf("%d Heavy Fighter, ", vehicles.hvyFighter)
 	}
-	detailHighEndVehicles.SetText(highEnd)
-	detailHighEndVehicles.Refresh()
-
-}
-
-func buildVehicles() {
-	buildSurface()
-	buildUtility()
-	buildHighEnd()
-	buildTotal()
-}
-
-func countVehicles() int {
-	result := vehicles.atvWheel + vehicles.atvTrack + vehicles.airRaft + vehicles.speeder + vehicles.gCarrier + vehicles.launch + vehicles.shipsBoat + vehicles.pinnace + vehicles.cutter + vehicles.slowBoat + vehicles.slowPinnace + +vehicles.shuttle + vehicles.ltFighter + vehicles.medFighter + vehicles.hvyFighter
-	return result
-}
-
-func vehicleTonsUsed() int {
-	result := vehicles.atvWheel*10 + vehicles.atvTrack*10 + vehicles.airRaft*4 + vehicles.speeder*6 + vehicles.gCarrier*8 + vehicles.launch*20 + vehicles.shipsBoat*30 + vehicles.pinnace*40 + vehicles.cutter*80 + vehicles.slowBoat*30 + vehicles.slowPinnace*40 + vehicles.shuttle*95 + vehicles.ltFighter*10 + vehicles.medFighter*30 + vehicles.hvyFighter*50
-	return result
+	return highEnd
 }
