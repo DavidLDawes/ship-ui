@@ -19,20 +19,17 @@ func buildDetails() {
 
 func main() {
 
+	a := app.New()
+	w := a.NewWindow("Designer")
+
+	tlSelect = widget.NewSelect(techLevels, nothing)
+	tlSelect.SetSelected("F")
+	tlSelect.OnChanged = techLevelChanged
 	buildDetails()
 	weaponsInit()
 	berthsInit()
 	drivesInit()
 	shipInit()
-
-	a := app.New()
-	w := a.NewWindow("Designer")
-
-	tlSelect = widget.NewSelect(techLevels, techLevelChanged)
-	tlSelect.SetSelected("F")
-
-	tonsSelect = widget.NewSelect(tons, tonsChanged)
-	tonsSelect.SetSelected("200")
 
 	atvWheelSelect = widget.NewSelect(weaponLevel, atvWheelChanged)
 	atvTrackSelect = widget.NewSelect(weaponLevel, atvTrackChanged)
@@ -82,7 +79,7 @@ func main() {
 	//	widget.NewVBox(shipDetails, weaponDetails, berthDetails, vehicleDetails))
 
 	ui := widget.NewHBox(
-		widget.NewVBox(widget.NewLabel("Drives"), shipSettings, widget.NewLabel("Berths")),
+		widget.NewVBox(widget.NewLabel("Drives"), shipSettings, widget.NewLabel("Berths"), berthSettings, widget.NewLabel("Weapons"), weaponSettings),
 		widget.NewVBox(widget.NewLabel("Vehicles"), vehicleSettings),
 		widget.NewVBox(shipDetails, weaponDetails, berthDetails, vehicleDetails))
 

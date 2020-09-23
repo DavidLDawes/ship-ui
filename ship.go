@@ -60,14 +60,32 @@ var shipSettings *widget.Form
 var shipDetails *widget.Box
 
 func shipInit() {
+	tonsSelect = widget.NewSelect(tons, nothing)
+	tonsSelect.Selected = "200"
+
+	jumpSelect = widget.NewSelect(engineLevel, jumpChanged)
+	jumpSelect.SetSelected("2")
+
+	maneuverSelect = widget.NewSelect(engineLevel, maneuverChanged)
+	maneuverSelect.SetSelected("2")
+
+	powerSelect = widget.NewSelect(engineLevel, powerChanged)
+	powerSelect.SetSelected("2")
+
+	armoredSelect = widget.NewCheck("Armored bulkheads", armoredChanged)
+	armoredSelect.Checked = false
+
+	roboSelect = widget.NewCheck("Robotic crew", roboChanged)
+	roboSelect.Checked = false
+
 	shipSettings = widget.NewForm(
 		widget.NewFormItem("Tech Level", tlSelect),
 		widget.NewFormItem("tons", tonsSelect),
 		widget.NewFormItem("Jump", jumpSelect),
 		widget.NewFormItem("Maneuver", maneuverSelect),
 		widget.NewFormItem("Power", powerSelect),
-		widget.NewFormItem("Armored", armoredSelect),
-		widget.NewFormItem("Robotics", roboSelect),
+		widget.NewFormItem("Armor", armoredSelect),
+		widget.NewFormItem("Robots", roboSelect),
 	)
 
 	shipDetails = widget.NewVBox(
@@ -81,15 +99,6 @@ func shipInit() {
 		detailHardPoints,
 		detailTotal,
 	)
-
-	tonsSelect = widget.NewSelect(tons, nothing)
-	tonsSelect.Selected = "200"
-
-	armoredSelect = widget.NewCheck("Armored bulkheads", armoredChanged)
-	armoredSelect.Checked = false
-
-	roboSelect = widget.NewCheck("Robotic crew", roboChanged)
-	roboSelect.Checked = false
 }
 
 func armoredChanged(armored bool) {

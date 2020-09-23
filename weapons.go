@@ -50,9 +50,6 @@ var particleSelect *widget.Select
 
 var weaponsSelect []*widget.Select
 
-var weaponsAlreadyInit bool = false
-var weaponsSelectsAlreadyInit bool = false
-
 var ignoreMissile = false
 var ignoreBeam = false
 var ignorePulse = false
@@ -62,6 +59,34 @@ var ignoreFusion = false
 var ignoreParticle = false
 
 func weaponsInit() {
+	missileSelect = widget.NewSelect(weaponLevel, nothing)
+	missileSelect.SetSelected("0")
+	missileSelect.OnChanged = missileChanged
+
+	beamSelect = widget.NewSelect(weaponLevel, nothing)
+	beamSelect.SetSelected("0")
+	missileSelect.OnChanged = beamChanged
+
+	pulseSelect = widget.NewSelect(weaponLevel, nothing)
+	pulseSelect.SetSelected("0")
+	missileSelect.OnChanged = pulseChanged
+
+	fusionSelect = widget.NewSelect(weaponLevel, nothing)
+	fusionSelect.SetSelected("0")
+	missileSelect.OnChanged = fusionChanged
+
+	plasmaSelect = widget.NewSelect(weaponLevel, nothing)
+	plasmaSelect.SetSelected("0")
+	missileSelect.OnChanged = plasmaChanged
+
+	sandSelect = widget.NewSelect(weaponLevel, nothing)
+	sandSelect.SetSelected("0")
+	missileSelect.OnChanged = sandChanged
+
+	particleSelect = widget.NewSelect(weaponLevel, nothing)
+	particleSelect.SetSelected("0")
+	missileSelect.OnChanged = particleChanged
+
 	weaponSettings = widget.NewForm(
 		widget.NewFormItem("Missile", missileSelect),
 		widget.NewFormItem("Beam", beamSelect),
@@ -74,48 +99,6 @@ func weaponsInit() {
 }
 
 func weaponsSelectInit() {
-	missileSelect = widget.NewSelect(weaponLevel, nothing)
-	ignoreMissile = true
-	missileSelect.SetSelected("0")
-	missileSelect.OnChanged = missileChanged
-	ignoreMissile = false
-
-	beamSelect = widget.NewSelect(weaponLevel, nothing)
-	ignoreBeam = true
-	beamSelect.SetSelected("0")
-	missileSelect.OnChanged = beamChanged
-	ignoreBeam = false
-
-	pulseSelect = widget.NewSelect(weaponLevel, nothing)
-	ignorePulse = true
-	pulseSelect.SetSelected("0")
-	missileSelect.OnChanged = pulseChanged
-	ignorePulse = false
-
-	fusionSelect = widget.NewSelect(weaponLevel, nothing)
-	ignoreFusion = true
-	fusionSelect.SetSelected("0")
-	missileSelect.OnChanged = fusionChanged
-	ignoreFusion = false
-
-	plasmaSelect = widget.NewSelect(weaponLevel, nothing)
-	ignorePlasma = true
-	plasmaSelect.SetSelected("0")
-	missileSelect.OnChanged = plasmaChanged
-	ignorePlasma = false
-
-	sandSelect = widget.NewSelect(weaponLevel, nothing)
-	ignoreSand = true
-	sandSelect.SetSelected("0")
-	missileSelect.OnChanged = sandChanged
-	ignoreSand = false
-
-	particleSelect = widget.NewSelect(weaponLevel, nothing)
-	ignoreParticle = true
-	particleSelect.SetSelected("0")
-	missileSelect.OnChanged = particleChanged
-	ignoreParticle = false
-
 	weaponsSelect = make([]*widget.Select, 7)
 	weaponsSelect[0] = missileSelect
 	weaponsSelect[1] = beamSelect
