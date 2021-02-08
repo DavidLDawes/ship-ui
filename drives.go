@@ -102,48 +102,48 @@ func powerChanged(value string) {
 	buildTotal()
 }
 
-var jbase = [5]float32{
-	2.0, 1.75, 1.5, 1.0, 0.66666,
+var jbase = [6]float32{
+	2.0, 1.75, 1.5, 1.0, 0.66666, 0.5,
 }
-var jinc = [5]float32{
-	1.0, .8, .66666, 0.5, 0.33333,
+var jinc = [6]float32{
+	1.0, .8, .66666, 0.5, 0.33333, 0.25,
 }
 
 func jumpRate() float32 {
-	return (jbase[StarShip.tlOffset] + jinc[StarShip.tlOffset]*(float32(StarShip.jump)-1.0)) / 100.0
+	return getDiscount() * (jbase[StarShip.tlOffset] + jinc[StarShip.tlOffset]*(float32(StarShip.jump)-1.0)) / 100.0
 }
 
-var jfbase = [5]float32{
-	10.0, 8.0, 6.0, 5.0, 4.0,
+var jfbase = [6]float32{
+	10.0, 8.0, 6.0, 5.0, 4.0, 2.5,
 }
-var jfinc = [5]float32{
-	10.0, 7.0, 6.0, 4.0, 2.5,
+var jfinc = [6]float32{
+	10.0, 7.0, 6.0, 4.0, 2.5, 1.75,
 }
 
 func jumpFuelRate() float32 {
-	return (jfbase[StarShip.tlOffset] + jfinc[StarShip.tlOffset]*(float32(StarShip.jump)-1.0)) / 100.0
+	return getFuelDiscount() * (jfbase[StarShip.tlOffset] + jfinc[StarShip.tlOffset]*(float32(StarShip.jump)-1.0)) / 100.0
 }
 
-var mbase = [5]float32{
-	2.0, 1.5, 1.25, 1.0, 0.66666,
+var mbase = [6]float32{
+	3.0, 1.5, 1.25, 1.0, 0.66666, 0.5,
 }
-var minc = [5]float32{
-	3.0, 2.0, 1.66666, 1.5, 1.0,
+var minc = [6]float32{
+	4.0, 2.0, 1.66666, 1.5, 1.0, 0.75,
 }
 
 func maneuverRate() float32 {
-	return (mbase[StarShip.tlOffset] + minc[StarShip.tlOffset]*(float32(StarShip.maneuver)-1.0)) / 100.0
+	return getDiscount() * (mbase[StarShip.tlOffset] + minc[StarShip.tlOffset]*(float32(StarShip.maneuver)-1.0)) / 100.0
 }
 
-var pbase = [5]float32{
-	1.0, 0.75, 0.6, 0.5, 0.33333,
+var pbase = [6]float32{
+	1.0, 0.7, 0.5, 0.4, 0.33333, 0.25,
 }
-var pinc = [5]float32{
-	1.0, .7, 0.55, 0.4, 0.25,
+var pinc = [6]float32{
+	1.0, .7, 0.55, 0.4, 0.25, 0.175,
 }
 
 func powerRate() float32 {
-	return (pbase[StarShip.tlOffset] + pinc[StarShip.tlOffset]*(float32(StarShip.power)-1.0)) / 100.0
+	return getDiscount() * (pbase[StarShip.tlOffset] + pinc[StarShip.tlOffset]*(float32(StarShip.power)-1.0)) / 100.0
 }
 
 func buildJump() {
@@ -189,4 +189,48 @@ func drivesTonsUsed() int {
 func nothing(value string) {
 }
 func nothingBool(value bool) {
+}
+
+func getDiscount() (discount float32) {
+	discount = float32(1.0)
+	if StarShip.tlOffset == 3 {
+		if StarShip.tons > 99999 {
+			discount = 0.66666
+		} else if StarShip.tons > 9999 {
+			discount = 0.75
+		} else if StarShip.tons > 999 {
+			discount = 0.9
+		}
+	} else if StarShip.tlOffset == 4 {
+		discount = 0.9333
+		if StarShip.tons > 99999 {
+			discount = 0.5
+		} else if StarShip.tons > 9999 {
+			discount = 0.66666
+		} else if StarShip.tons > 999 {
+			discount = 0.8666
+		}
+	} else if StarShip.tlOffset == 5 {
+		discount = 0.86666
+		if StarShip.tons > 99999 {
+			discount = 0.33333
+		} else if StarShip.tons > 9999 {
+			discount = 0.5
+		} else if StarShip.tons > 999 {
+			discount = 0.75
+		}
+	}
+	return discount
+}
+
+func getFuelDiscount() (discount float32) {
+	discount = float32(1.0)
+	if StarShip.tlOffset == 3 {
+		discount = 0.6666
+	} else if StarShip.tlOffset == 4 {
+		discount = .5
+	} else if StarShip.tlOffset == 5 {
+		discount = .363636
+	}
+	return discount
 }

@@ -1,7 +1,7 @@
 package main
 
 // techLevels - lists the tech levels supported by the app
-var techLevels = []string{"F", "G", "H", "J", "K"}
+var techLevels = []string{"F", "G", "H", "J", "K", "L"}
 
 // tons - lists the ship tonnage amounts supported by the app
 var tons = []string{"100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1200", "1500", "2000", "2500",

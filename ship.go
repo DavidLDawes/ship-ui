@@ -60,7 +60,7 @@ var shipSettings *widget.Form
 var shipDetails *widget.Box
 
 func shipInit() {
-	tonsSelect = widget.NewSelect(tons, nothing)
+	tonsSelect = widget.NewSelect(tons, tonsChanged)
 	tonsSelect.Selected = "200"
 
 	jumpSelect = widget.NewSelect(engineLevel, jumpChanged)

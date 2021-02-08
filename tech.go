@@ -14,14 +14,16 @@ func techLevelChanged(tlSelected string) {
 		// F = 0
 		// G = 1
 		// H = 2
+		// I
 		// J = 3
 		// K = 4
-		if tlOffset < 6 {
-			if tlOffset > 4 {
-				tlOffset = 4
-			}
+		// L = 5
+		if tlOffset < 7 {
 			StarShip.tl = tlSelected
 			StarShip.tlOffset = int(tlOffset)
+			if StarShip.tlOffset > 2 {
+				StarShip.tlOffset--
+			}
 			if StarShip.tlOffset < 1 {
 				// TL-F (offset 0) only goes to J-6, M-6 & P-6
 				if StarShip.jump > 6 {
